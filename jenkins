@@ -1,50 +1,33 @@
 pipeline {
+  agent any
 
-    agent any
+  options { timestamps() }
 
-    stages {
-
-        stage('Clone') {
-
-            steps {
-
-                git 'https://github.com/krishnakvvs/webapp.git'
-
-            }
-
-        }
-
-        stage('Build') {
-
-            steps {
-
-                echo 'Building the project...'
-
-            }
-
-        }
-
-        stage('Test') {
-
-            steps {
-
-                echo 'Running tests...'
-
-            }
-
-        }
-
-        stage('Deploy') {
-
-            steps {
-
-                echo 'Deploying...'
-
-            }
-
-        }
-
+  stages {
+    stage('Checkout') {
+      steps { checkout scm }
     }
+    stage('Build') {
+      steps {
+        sh '''
+          echo "Building…"
+          mkdir -p out
+          echo "Hello from Jenkins $(date)" > out/build.txt
+        '''
+      }
+    }
+    stage('Test') {
+      steps {
+        sh 'echo "Running tests…"; sleep 1'
+      }
+    }
+  }
 
+  post {
+    always {
+      archiveArtifacts artifacts: 'out/**', fingerprint: true
+    }
+    success { echo '✅ Done' }
+    failure { echo '❌ Failed' }
+  }
 }
- 
